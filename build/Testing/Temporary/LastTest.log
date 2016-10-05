@@ -1,0 +1,56 @@
+Start testing: Sep 21 11:00 CEST
+----------------------------------------------------------
+1/1 Testing: UnitShellTests
+1/1 Test: UnitShellTests
+Command: "/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/allShellTests.rb"
+Directory: /user/1/.base/collanga/home/sepc/2B/ensimag-shell/build
+"UnitShellTests" start time: Sep 21 11:00 CEST
+Output:
+----------------------------------------------------------
+Run options: --seed 49057
+
+# Running:
+
+FFFFF.....
+
+Finished in 5.235259s, 1.9101 runs/s, 2.1011 assertions/s.
+
+  1) Failure:
+Test2InOut#test_pipe [/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/testInOut.rb:42]:
+sortie incohérente pour ls | wc -l.
+Expected nil to not be nil.
+
+
+  2) Failure:
+Test2InOut#test_inoutpipe [/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/testInOut.rb:50]:
+cat titiExpect.txt titiExpect.txt n'a pas rendu deux fois le même entier à la suite.
+Expected nil to not be nil.
+
+
+  3) Failure:
+Test2InOut#test_parallelisme [/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/testInOut.rb:63]:
+le | ne semble pas parallèle.
+Expected nil to not be nil.
+
+
+  4) Failure:
+Test2InOut#test_inout [/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/testInOut.rb:27]:
+sortie incohérente pour ls -l.
+Expected nil to not be nil.
+
+
+  5) Failure:
+Test3Jobs#test_inout [/user/1/.base/collanga/home/sepc/2B/ensimag-shell/tests/testJobs.rb:25]:
+le ls n'a pas afficher la taille du fichier.
+Expected nil to not be nil.
+
+10 runs, 11 assertions, 5 failures, 0 errors, 0 skips
+<end of output>
+Test time =   5.36 sec
+----------------------------------------------------------
+Test Failed.
+"UnitShellTests" end time: Sep 21 11:00 CEST
+"UnitShellTests" time elapsed: 00:00:05
+----------------------------------------------------------
+
+End testing: Sep 21 11:00 CEST

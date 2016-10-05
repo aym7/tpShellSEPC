@@ -1,0 +1,2 @@
+/user/1/.base/collanga/home/sepc/2B/ensimag-shell/build/CMakeFiles/check.dir
+/user/1/.base/collanga/home/sepc/2B/ensimag-shell/build/CMakeFiles/ensishell.dir
