@@ -3,11 +3,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 struct Job {
+	struct Job *prev;
 	pid_t pid;
 	struct Job *next;
 };
 
-typedef struct {
+typedef struct jobs {
 	struct Job *first;
 	struct Job *last;
 } Jobs;

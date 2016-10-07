@@ -6,22 +6,36 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-Jobs *jobs;
+Jobs *jobs = NULL;
 void removeJob(struct Job *job);
+void createList();
 
 void showErr(char *who) {
 	fprintf(stderr, "%s", who);
 	exit(errno);
 }
 
+void createList() {
+	jobs = malloc(sizeof(Jobs));
+	if(jobs == NULL) showErr("malloc");
+	jobs->first = jobs->last = NULL;
+}
+
 void addJob(pid_t pid) {
+	if (jobs == NULL) {
+		createList();
+	}
 	struct Job *job = malloc(sizeof(struct Job));
+	if(job == NULL) showErr("malloc");
 	job->pid=pid;
 	job->next = NULL;
-	if (jobs->first == NULL) jobs->first = jobs->last = job;
+	if (jobs->first == NULL) {
+	   	jobs->first = jobs->last = job;
+	}
 	else {
 	   jobs->last->next = job;
 	   jobs->last = job;
+	   
 	}
 }
 
