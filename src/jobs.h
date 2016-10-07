@@ -1,5 +1,7 @@
 #ifndef JOBS_H
 #define JOBS_H
+#include <unistd.h>
+#include <sys/types.h>
 struct Job {
 	pid_t pid;
 	struct Job *next;
@@ -13,6 +15,6 @@ typedef struct {
 
 void addJob(pid_t pid);
 void removePid(pid_t pid);
-void jobs();
+void myJobs();
 void showErr(char *who);
 #endif

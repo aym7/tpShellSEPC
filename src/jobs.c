@@ -7,18 +7,18 @@
 #include <sys/wait.h>
 
 Jobs *jobs;
-void removeJob(Job *job);
+void removeJob(struct Job *job);
 
 void showErr(char *who) {
 	fprintf(stderr, "%s", who);
 	exit(errno);
 }
 
-void addJob(pid) {
+void addJob(pid_t pid) {
 	struct Job *job = malloc(sizeof(struct Job));
 	job->pid=pid;
 	job->next = NULL;
-	if (Jobs->first == NULL) jobs->first = jobs->last = job;
+	if (jobs->first == NULL) jobs->first = jobs->last = job;
 	else {
 	   jobs->last->next = job;
 	   jobs->last = job;
@@ -28,7 +28,7 @@ void addJob(pid) {
 void removePid(pid_t pid) {
 	struct Job *parc = jobs->first;
 
-	while (*parc != NULL) {
+	while (parc != NULL) {
 		if(parc->pid == pid) {
 			removeJob(parc);
 		}
@@ -36,11 +36,12 @@ void removePid(pid_t pid) {
 	}
 }
 
-void removeJob(Job *job) {
+void removeJob(struct Job *job) {
 	if (job == jobs->first) {
 		jobs->first = job->next;
 	} else if (job == jobs->last) {
 		// besoin ancienne valeur (job->prev ?)
+		printf("hi");
 
 	}
 	else {
@@ -48,15 +49,15 @@ void removeJob(Job *job) {
 		jobs->last = job->next;
 	}
 
-	free(job)
+	free(job);
 }
 
-void jobs() {
+void myJobs() {
 	struct Job *parc = jobs->first;
 	int status;
 
-	while (*parc != NULL) {
-		waitpid(pid, &status, WNOHANG);
+	while (parc != NULL) {
+		waitpid(parc->pid, &status, WNOHANG);
 		if(WIFEXITED(status) || WIFSTOPPED(status)) { // process terminated normally
 			removeJob(parc);
 		}
