@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 Jobs *jobs;
 void removeJob(Job *job);
@@ -41,15 +43,28 @@ void removeJob(Job *job) {
 		// besoin ancienne valeur (job->prev ?)
 
 	}
+	else {
+		// prev->next = job->next;
+		jobs->last = job->next;
+	}
 
 	free(job)
 }
 
 void jobs() {
 	struct Job *parc = jobs->first;
+	int status;
 
 	while (*parc != NULL) {
+		waitpid(pid, &status, WNOHANG);
+		if(WIFEXITED(status) || WIFSTOPPED(status)) { // process terminated normally
+			removeJob(parc);
+		}
+
 		printf("%d \n", parc->pid);
+		if(WIFEXITED(status) || WIFSTOPPED(status)) { // process terminated normally
+			removeJob(parc);
+		}
 		parc = parc->next;
 	}
 }
