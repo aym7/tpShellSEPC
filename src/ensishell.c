@@ -15,6 +15,7 @@
 
 #include "variante.h"
 #include "readcmd.h"
+#include "jobs.h"
 
 #ifndef VARIANTE
 #error "Variante non défini !!"
@@ -62,6 +63,7 @@ void terminate(char *line) {
 }
 
 void execFils(char *prog, char **arg) {
+	if(strcmp(prog, "jobs") == 0) myJobs();
 	if(execvp(prog, arg) == -1) perror("exec"), exit(errno);
 	puts("cette ligne ne doit JAMAIS être affichée");
 }
@@ -88,6 +90,8 @@ void executer(char *line) {
 			default: // père
 				if(!cmds->bg) { // task not launched in background ("&")
 					if(waitpid(pid, NULL, 0) == -1) perror("waitpid"), exit(errno);
+				} else { // task in bg
+					addJob(pid, cmds->seq[i][0]); // add it to our jobs list
 				}
 		}
 	}

@@ -5,13 +5,14 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
 
 Jobs *jobs = NULL;
 void removeJob(struct Job *job);
 void createList();
 
 void showErr(char *who) {
-	fprintf(stderr, "%s", who);
+	fprintf(stderr, "%s\n", who);
 	exit(errno);
 }
 
@@ -21,21 +22,26 @@ void createList() {
 	jobs->first = jobs->last = NULL;
 }
 
-void addJob(pid_t pid) {
-	if (jobs == NULL) {
-		createList();
-	}
+void addJob(pid_t pid, char *name) {
+	printf("adding %d to job\n", pid);
+	if (jobs == NULL) createList();
+
+	// allocate memory
 	struct Job *job = malloc(sizeof(struct Job));
 	if(job == NULL) showErr("malloc");
-	job->pid=pid;
+	job->name = malloc(strlen(name)+1);
+	if(job->name == NULL) showErr("malloc");
+
+	// set job parameters
+	job->pid = pid;
+	strcpy(job->name, name);
 	job->next = NULL;
+	// add job to list
 	if (jobs->first == NULL) {
 	   	jobs->first = jobs->last = job;
-	}
-	else {
+	} else {
 	   jobs->last->next = job;
 	   jobs->last = job;
-	   
 	}
 }
 
@@ -57,29 +63,35 @@ void removeJob(struct Job *job) {
 		// besoin ancienne valeur (job->prev ?)
 		printf("hi");
 
-	}
-	else {
+	} else {
 		// prev->next = job->next;
 		jobs->last = job->next;
 	}
 
+	free(job->name);
 	free(job);
 }
 
 void myJobs() {
 	struct Job *parc = jobs->first;
-	int status;
+//	int status;
 
 	while (parc != NULL) {
-		waitpid(parc->pid, &status, WNOHANG);
-		if(WIFEXITED(status) || WIFSTOPPED(status)) { // process terminated normally
+		// TODO remove and print when terminated
+#ifdef WAITPID
+		if(waitpid(parc->pid, &status, WNOHANG | WUNTRACED) == -1) {
+			perror("waitpid"), exit(errno);
+//			showErr("waitpid");
+		}
+#endif
+		printf("[%d] %s", parc->pid, parc->name);
+#ifdef WAITPID
+		if ((WIFEXITED(status) || WIFSTOPPED(status)) && WSTOPSIG(status)) { // process terminated normally
+			printf("TERMINATED");
 			removeJob(parc);
 		}
-
-		printf("%d \n", parc->pid);
-		if(WIFEXITED(status) || WIFSTOPPED(status)) { // process terminated normally
-			removeJob(parc);
-		}
+#endif
+		printf("\n");
 		parc = parc->next;
 	}
 }

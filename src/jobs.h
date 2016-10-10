@@ -5,6 +5,7 @@
 struct Job {
 	struct Job *prev;
 	pid_t pid;
+	char *name;
 	struct Job *next;
 };
 
@@ -14,7 +15,7 @@ typedef struct jobs {
 } Jobs;
 
 
-void addJob(pid_t pid);
+void addJob(pid_t pid, char *name);
 void removePid(pid_t pid);
 void myJobs();
 void showErr(char *who);
