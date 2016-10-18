@@ -62,7 +62,6 @@ void removeJob(struct Job *job) {
 	} else if (job == jobs->last) {
 		// besoin ancienne valeur (job->prev ?)
 		printf("hi");
-
 	} else {
 		// prev->next = job->next;
 		jobs->last = job->next;
