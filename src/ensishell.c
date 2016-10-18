@@ -69,7 +69,9 @@ void execFils(char *prog, char **arg) {
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
-   
+	int pipe_fd[2];
+	//int prev_pipe_fd[2]; //Multiple pipe
+
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
 	}
@@ -80,15 +82,33 @@ void executer(char *line) {
 	}
 
 	for(int i=0; cmds->seq[i] != NULL; ++i) {
+		if (cmds->seq[i+1]) { 
+			if (pipe(pipe_fd) == - 1) perror("pipe error"), exit(errno);
+		}
 		switch((pid=fork())) {
 			case -1: perror("fork"), exit(errno);
 			case 0: // fils 
-				execFils(cmds->seq[i][0], cmds->seq[i]);
-				break;
+
+				 if (i > 0) { // There is a previous command
+					 printf("%d read-end here %s\n", pid, cmds->seq[i][0]);
+					 if (dup2(pipe_fd[0], 0) == -1) perror("dup2"), exit(errno);
+					 close(pipe_fd[0]); close(pipe_fd[1]);
+				 }
+				 if (cmds->seq[i+1]) { // There is a next command
+					 printf("%d write-end here %s\n", pid, cmds->seq[i][0]);
+					 if (dup2(pipe_fd[1], 1) == -1) perror("dup2"), exit(errno);
+					 close(pipe_fd[1]); close(pipe_fd[0]);
+				 }
+
+				 execFils(cmds->seq[i][0], cmds->seq[i]);
+				 break;
 			default: // père
-				if(!cmds->bg) { // task not launched in background ("&")
-					if(waitpid(pid, NULL, 0) == -1) perror("waitpid"), exit(errno);
-				}
+				 printf("pid %d = %s\n", pid, cmds->seq[i][0]);
+				 if(!cmds->bg) { // task not launched in background ("&")
+				 	 printf("I wait for pid : %d\n", pid);
+					 if(waitpid(pid, NULL, WUNTRACED) == -1) perror("waitpid"), exit(errno);
+					 printf("I no longer wait for pid : %d\n", pid);
+				 }
 		}
 	}
 }
@@ -103,9 +123,9 @@ int main() {
 #endif
 
 	while (1) {
-//		struct cmdline *l;
+		//		struct cmdline *l;
 		char *line=0;
-//		int i, j;
+		//		int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -131,7 +151,7 @@ int main() {
 			continue;
 		}
 #endif
-		 executer(line);
+		executer(line);
 #ifdef EXEC_PRINT
 		/* parsecmd free line and set it up to 0 */
 		l = parsecmd( & line);
