@@ -70,7 +70,6 @@ void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
 	int pipe_fd[2];
-	//int prev_pipe_fd[2]; //Multiple pipe
 
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
@@ -88,23 +87,24 @@ void executer(char *line) {
 		switch((pid=fork())) {
 			case -1: perror("fork"), exit(errno);
 			case 0: // fils 
+				
 
 				 if (i > 0) { // There is a previous command
 					 printf("%d read-end here %s\n", pid, cmds->seq[i][0]);
 					 if (dup2(pipe_fd[0], 0) == -1) perror("dup2"), exit(errno);
-					 close(pipe_fd[0]); close(pipe_fd[1]);
 				 }
 				 if (cmds->seq[i+1]) { // There is a next command
 					 printf("%d write-end here %s\n", pid, cmds->seq[i][0]);
 					 if (dup2(pipe_fd[1], 1) == -1) perror("dup2"), exit(errno);
-					 close(pipe_fd[1]); close(pipe_fd[0]);
 				 }
+				 close(pipe_fd[1]); close(pipe_fd[0]);
+
 
 				 execFils(cmds->seq[i][0], cmds->seq[i]);
 				 break;
 			default: // père
 				 printf("pid %d = %s\n", pid, cmds->seq[i][0]);
-				 if(!cmds->bg) { // task not launched in background ("&")
+				 if(!cmds->bg || cmds->seq[i+1]) { // task not launched in background ("&")
 				 	 printf("I wait for pid : %d\n", pid);
 					 if(waitpid(pid, NULL, WUNTRACED) == -1) perror("waitpid"), exit(errno);
 					 printf("I no longer wait for pid : %d\n", pid);
