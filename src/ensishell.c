@@ -15,6 +15,7 @@
 
 #include "variante.h"
 #include "readcmd.h"
+#include "jobs.h"
 
 #ifndef VARIANTE
 #error "Variante non défini !!"
@@ -62,6 +63,7 @@ void terminate(char *line) {
 }
 
 void execFils(char *prog, char **arg) {
+	if(strcmp(prog, "jobs") == 0) myJobs();
 	if(execvp(prog, arg) == -1) perror("exec"), exit(errno);
 	puts("cette ligne ne doit JAMAIS être affichée");
 }
