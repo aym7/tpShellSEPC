@@ -76,7 +76,6 @@ void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
 	int pipe_fd[2];
-	//int prev_pipe_fd[2]; //Multiple pipe
 
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
@@ -110,10 +109,12 @@ void executer(char *line) {
 					 if(dup2(pipe_fd[0], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
 
+
 				 execFils(cmds->seq[i][0], cmds->seq[i]);
 				 break;
 			default: // père
 				 // si on a eu une série de pipe et qu'on est au dernier proc
+				 printf("pid %d = %s\n", pid, cmds->seq[i][0]);
 				 if(!cmds->seq[i+1]) {
 					 if(i > 0) {
 						 // fermeture des pipe
@@ -122,7 +123,9 @@ void executer(char *line) {
 					 }
 
 					 if(!cmds->bg) { // task not launched in background ("&")
+						 printf("I wait for pid : %d\n", pid);
 						 if(waitpid(pid, NULL, WUNTRACED | WCONTINUED) == -1) showErrno("waitpid");
+						 printf("I no longer wait for pid : %d\n", pid);
 					 } else { 
 						 addJob(pid, cmds->seq[i][0]);
 					 }
