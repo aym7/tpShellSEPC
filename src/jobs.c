@@ -1,4 +1,5 @@
 #include "jobs.h"
+#include "err.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +11,6 @@
 Jobs *jobs = NULL;
 void removeJob(struct Job *job);
 void createList();
-
-void showErr(char *who) {
-	fprintf(stderr, "%s\n", who);
-	exit(errno);
-}
 
 void createList() {
 	jobs = malloc(sizeof(Jobs));
