@@ -27,6 +27,7 @@
  * following lines.  You may also have to comment related pkg-config
  * lines in CMakeLists.txt.
  */
+void execPere(pid_t fils, int bg, char *name);
 
 #if USE_GUILE == 1
 #include <libguile.h>
@@ -94,7 +95,6 @@ void executer(char *line) {
 			case -1: showErrno("fork");
 			case 0: // fils 
 				 if(cmds->seq[i+1]) { // There is a next command
-//					 printf("%d write-end here %s\n", pid, cmds->seq[i][0]);
 					 // close pipe output
 					 if(close(pipe_fd[0]) == -1) showErrno("close");
 					 // our standard output go in the pipe
@@ -102,7 +102,6 @@ void executer(char *line) {
 				 }
 
 				 if(i > 0) { // There was a previous command
-//					 printf("%d read-end here %s\n", pid, cmds->seq[i][0]);
 					 // close pipe input
 					 if(close(pipe_fd[1]) == -1) showErrno("close");
 					 // our input comes from the pipe
@@ -113,24 +112,27 @@ void executer(char *line) {
 				 execFils(cmds->seq[i][0], cmds->seq[i]);
 				 break;
 			default: // père
-				 // si on a eu une série de pipe et qu'on est au dernier proc
-				 printf("pid %d = %s\n", pid, cmds->seq[i][0]);
+				 // si on est au dernier proc
 				 if(!cmds->seq[i+1]) {
+					 // si on a eu une série de pipe 
 					 if(i > 0) {
 						 // fermeture des pipe
 						 if(close(pipe_fd[0]) == -1) showErrno("close");
 						 if(close(pipe_fd[1]) == -1) showErrno("close");
 					 }
-
-					 if(!cmds->bg) { // task not launched in background ("&")
-						 printf("I wait for pid : %d\n", pid);
-						 if(waitpid(pid, NULL, WUNTRACED | WCONTINUED) == -1) showErrno("waitpid");
-						 printf("I no longer wait for pid : %d\n", pid);
-					 } else { 
-						 addJob(pid, cmds->seq[i][0]);
-					 }
+					 execPere(pid, cmds->bg, cmds->seq[i][0]);
 				 }
 		}
+	}
+}
+
+void execPere(pid_t pid, int bg, char *name) {
+	if(!bg) { // task not launched in background ("&")
+		printf("I wait for pid : %d\n", pid);
+		if(waitpid(pid, NULL, WUNTRACED | WCONTINUED) == -1) showErrno("waitpid");
+		printf("I no longer wait for pid : %d\n", pid);
+	} else { 
+		addJob(pid, name);
 	}
 }
 
