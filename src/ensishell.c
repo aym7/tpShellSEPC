@@ -98,7 +98,7 @@ void execFils(char *prog, char **arg) {
 }*/
 
 void term_handler(int signum) {
-	printf("\nA child terminated");
+	printf("\nA child terminated\n");
 }
 
 
