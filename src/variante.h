@@ -1,8 +1,8 @@
 #ifndef VARIANTE_H
 #define VARIANTE_H
 
-#define LOGINS collanga
-#define SUJET 0
+#define LOGINS bordesn;collanga
+#define SUJET 6
 #define USE_GUILE 0
 #define USE_GNU_READLINE 1
 
