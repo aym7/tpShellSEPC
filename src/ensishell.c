@@ -123,6 +123,7 @@ void executer(char *line) {
 					 	 if(close(pipe_fd[0]) == -1) showErrno("close");
 					 // our standard output go in the pipe
 					 	 if(dup2(pipe_fd[1], STDOUT_FILENO) == -1) showErrno("dup2");
+
 				 }
 
 				 if(i > 0) { // There was a previous command
@@ -130,6 +131,8 @@ void executer(char *line) {
 					 //if(close(pipe_fd[1]) == -1) showErrno("close");
 					 // our input comes from the pipe
 					 if(dup2(pipe_fd[2], STDIN_FILENO) == -1) showErrno("dup2");
+					 //if(close(pipe_fd[2]) == -1) showErrno("close");
+
 				 }
 
 				 if(cmds->in) {
@@ -144,10 +147,9 @@ void executer(char *line) {
 				 execFils(cmds->seq[i][0], cmds->seq[i]);
 				 break;
 			default: // père
-				 execPere(pid, cmds->bg, cmds->seq[i][0]);
 				 // fermeture des pipe
 				 if(i==0 && cmds->seq[1]) {
-						 if(close(pipe_fd[1]) == -1) showErrno("close");
+				 		 if(close(pipe_fd[1]) == -1) showErrno("close");
 				 }
 				 if (i > 0) {
 				 	 if (cmds->seq[i+1]) {
@@ -163,6 +165,7 @@ void executer(char *line) {
 
 		}
 	}
+	execPere(pid, cmds->bg, line);
 }
 
 void execPere(pid_t pid, int bg, char *name) {
