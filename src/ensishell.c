@@ -96,6 +96,16 @@ void execFils(char *prog, char **arg) {
 	// case 1:
 	// close(who)
 }*/
+
+void term_handler(int signum) {
+	printf("\nA child terminated");
+}
+
+
+
+
+
+
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
@@ -177,6 +187,7 @@ void execPere(pid_t pid, int bg, char *name) {
 }
 
 int main() {
+
 	printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
@@ -189,6 +200,7 @@ int main() {
 		//struct cmdline *l;
 		char *line=0;
 		//int i, j;
+		if (signal (SIGCHLD, term_handler) == SIG_ERR) showErrno("sigchld");
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
