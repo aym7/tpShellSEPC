@@ -41,12 +41,12 @@ int question6_executer(char *line)
 	 * parsecmd, then fork+execvp, for a single command.
 	 * pipe and i/o redirection are not required.
 	 */
-	printf("Not implemented yet: can not execute %s\n", line);
+	
 
+	executer(line);
 	/* Remove this line when using parsecmd as it will free it */
-	free(line);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 SCM executer_wrapper(SCM x)
@@ -99,7 +99,7 @@ void execFils(char *prog, char **arg) {
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
-	int pipe_fd[3];
+	int pipe_fd[2];
 
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
@@ -129,7 +129,7 @@ void executer(char *line) {
 					 // close pipe input
 					 if(close(pipe_fd[1]) == -1) showErrno("close");
 					 // our input comes from the pipe
-					 if(dup2(pipe_fd[3], STDIN_FILENO) == -1) showErrno("dup2");
+					 if(dup2(pipe_fd[0], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
 
 				 if(cmds->in) {
@@ -179,9 +179,9 @@ int main() {
 #endif
 
 	while (1) {
-//				struct cmdline *l;
+		struct cmdline *l;
 		char *line=0;
-//				int i, j;
+		int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -207,7 +207,8 @@ int main() {
 			continue;
 		}
 #endif
-		executer(line);
+		//executer(line);
+#define EXEC_PRINT
 #ifdef EXEC_PRINT
 		/* parsecmd free line and set it up to 0 */
 		l = parsecmd( & line);
