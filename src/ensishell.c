@@ -11,7 +11,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include "variante.h"
 #include "readcmd.h"
@@ -63,6 +65,15 @@ void terminate(char *line) {
 	printf("exit\n");
 	exit(0);
 }
+/*
+ * duplicate where in fd
+ */ 
+void dupFile(char *name, int flags, mode_t mode, int where) {
+	int fd;
+	if((fd = open(name, flags, mode)) == -1) showErrno("open");
+	if(dup2(fd, where) == -1) showErrno("dup2");
+	close(fd);
+}
 
 void execFils(char *prog, char **arg) {
 	if(strcmp(prog, "jobs") == 0) { 
@@ -73,6 +84,18 @@ void execFils(char *prog, char **arg) {
 	puts("cette ligne ne doit JAMAIS être affichée");
 }
 
+/*void closepipe(int pipe_fd[], int who) {
+	// 0 : output
+	// 1 : input
+	// 2 : both
+	// switch(who)
+	// case 2 :
+	// close0
+	// close1
+	// case 0:
+	// case 1:
+	// close(who)
+}*/
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
@@ -109,6 +132,14 @@ void executer(char *line) {
 					 if(dup2(pipe_fd[3], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
 
+				 if(cmds->in) {
+					 dupFile(cmds->in, O_RDONLY | O_CREAT, 0666, STDIN_FILENO);
+				 }
+
+				 if(cmds->out) {
+					 dupFile(cmds->out, O_WRONLY | O_CREAT, 0666, STDOUT_FILENO);
+				 }
+				
 
 				 execFils(cmds->seq[i][0], cmds->seq[i]);
 				 break;
@@ -118,8 +149,9 @@ void executer(char *line) {
 					 // si on a eu une série de pipe 
 					 if(i > 0) {
 						 // fermeture des pipe
-						 if(close(pipe_fd[1]) == -1) showErrno("close");
-						 if(close(pipe_fd[3]) == -1) showErrno("close");
+						 for(int j = 0; j < 2; j++) {
+							 if(close(pipe_fd[j]) == -1) showErrno("close");
+						 }
 					 }
 					 execPere(pid, cmds->bg, cmds->seq[i][0]);
 				 }
@@ -147,9 +179,9 @@ int main() {
 #endif
 
 	while (1) {
-		//		struct cmdline *l;
+//				struct cmdline *l;
 		char *line=0;
-		//		int i, j;
+//				int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
