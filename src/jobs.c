@@ -68,25 +68,24 @@ void removeJob(struct Job *job) {
 }
 
 void myJobs() {
-	struct Job *parc = jobs->first;
+	struct Job *job = jobs->first;
 //	int status;
 
-	while (parc != NULL) {
+	while (job != NULL) {
 		// TODO remove and print when terminated
 #ifdef WAITPID
-		if(waitpid(parc->pid, &status, WNOHANG | WUNTRACED) == -1) {
-			perror("waitpid"), exit(errno);
-//			showErr("waitpid");
+		if(waitpid(job->pid, &status, WNOHANG | WUNTRACED) == -1) {
+			showErrno("waitpid");
 		}
 #endif
-		printf("[%d] %s", parc->pid, parc->name);
+		printf("[%d] %s", job->pid, job->name);
 #ifdef WAITPID
 		if ((WIFEXITED(status) || WIFSTOPPED(status)) && WSTOPSIG(status)) { // process terminated normally
 			printf("TERMINATED");
-			removeJob(parc);
+			removeJob(job);
 		}
 #endif
 		printf("\n");
-		parc = parc->next;
+		job = job->next;
 	}
 }
