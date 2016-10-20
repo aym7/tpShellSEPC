@@ -99,7 +99,7 @@ void execFils(char *prog, char **arg) {
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
-	int pipe_fd[2];
+	int pipe_fd[3];
 
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
@@ -128,8 +128,9 @@ void executer(char *line) {
 				 if(i > 0) { // There was a previous command
 					 // close pipe input
 					 if(close(pipe_fd[1]) == -1) showErrno("close");
+					 if(close(pipe_fd[0]) == -1) showErrno("close");
 					 // our input comes from the pipe
-					 if(dup2(pipe_fd[0], STDIN_FILENO) == -1) showErrno("dup2");
+					 if(dup2(pipe_fd[2], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
 
 				 if(cmds->in) {
@@ -145,25 +146,25 @@ void executer(char *line) {
 				 break;
 			default: // père
 				 // si on est au dernier proc
+				 pipe_fd[2] = pipe_fd[1]
 				 if(!cmds->seq[i+1]) {
 					 // si on a eu une série de pipe 
 					 if(i > 0) {
 						 // fermeture des pipe
-						 for(int j = 0; j < 2; j++) {
+						 for(int j = 0; j < 3; j++) {
 							 if(close(pipe_fd[j]) == -1) showErrno("close");
 						 }
 					 }
 					 execPere(pid, cmds->bg, cmds->seq[i][0]);
 				 }
+
 		}
 	}
 }
 
 void execPere(pid_t pid, int bg, char *name) {
 	if(!bg) { // task not launched in background ("&")
-		printf("I wait for pid : %d\n", pid);
 		if(waitpid(pid, NULL, WUNTRACED | WCONTINUED) == -1) showErrno("waitpid");
-		printf("I no longer wait for pid : %d\n", pid);
 	} else { 
 		addJob(pid, name);
 	}
@@ -179,9 +180,9 @@ int main() {
 #endif
 
 	while (1) {
-		struct cmdline *l;
+		//struct cmdline *l;
 		char *line=0;
-		int i, j;
+		//int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -207,8 +208,7 @@ int main() {
 			continue;
 		}
 #endif
-		//executer(line);
-#define EXEC_PRINT
+		executer(line);
 #ifdef EXEC_PRINT
 		/* parsecmd free line and set it up to 0 */
 		l = parsecmd( & line);
