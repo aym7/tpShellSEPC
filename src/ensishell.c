@@ -138,8 +138,8 @@ void executer(char *line) {
 						 dupFile(cmds->in, O_RDONLY | O_CREAT, 0666, STDIN_FILENO);
 					 }
 
-					 if(cmds->out) {
-						 dupFile(cmds->out, O_WRONLY | O_CREAT, 0666, STDOUT_FILENO);
+					 if(cmds->out && !cmds->seq[i+1]) {
+						 dupFile(cmds->out, O_TRUNC | O_WRONLY | O_CREAT, 0666, STDOUT_FILENO);
 					 }
 
 
