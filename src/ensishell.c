@@ -128,7 +128,6 @@ void executer(char *line) {
 				 if(i > 0) { // There was a previous command
 					 // close pipe input
 					 if(close(pipe_fd[1]) == -1) showErrno("close");
-					 if(close(pipe_fd[0]) == -1) showErrno("close");
 					 // our input comes from the pipe
 					 if(dup2(pipe_fd[2], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
@@ -146,17 +145,17 @@ void executer(char *line) {
 				 break;
 			default: // père
 				 // si on est au dernier proc
-				 pipe_fd[2] = pipe_fd[1]
-				 if(!cmds->seq[i+1]) {
+				 pipe_fd[2] = pipe_fd[0];
+				 //if(!cmds->seq[i+1]) {
+					 execPere(pid, cmds->bg, cmds->seq[i][0]);
 					 // si on a eu une série de pipe 
 					 if(i > 0) {
 						 // fermeture des pipe
-						 for(int j = 0; j < 3; j++) {
+						 for(int j = 0; j < 2; j++) {
 							 if(close(pipe_fd[j]) == -1) showErrno("close");
 						 }
 					 }
-					 execPere(pid, cmds->bg, cmds->seq[i][0]);
-				 }
+				 //}
 
 		}
 	}
