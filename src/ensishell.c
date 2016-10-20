@@ -112,60 +112,60 @@ void executer(char *line) {
 
 	for(int i=0; cmds->seq[i] != NULL; ++i) {
 		if(cmds->seq[i+1]) { 
-				if (pipe(pipe_fd) == - 1) showErrno("pipe error");
+			if (pipe(pipe_fd) == - 1) showErrno("pipe error");
 		}
 
 		switch((pid=fork())) {
 			case -1: showErrno("fork");
 			case 0: // fils 
-				 if(cmds->seq[i+1]) { // There is a next command
-					 // close pipe output
-					 	 if(close(pipe_fd[0]) == -1) showErrno("close");
-					 // our standard output go in the pipe
-					 	 if(dup2(pipe_fd[1], STDOUT_FILENO) == -1) showErrno("dup2");
-
-				 }
-
-				 if(i > 0) { // There was a previous command
-					 // close pipe input
-					 //if(close(pipe_fd[1]) == -1) showErrno("close");
-					 // our input comes from the pipe
-					 if(dup2(pipe_fd[2], STDIN_FILENO) == -1) showErrno("dup2");
-					 //if(close(pipe_fd[2]) == -1) showErrno("close");
-
-				 }
-
-				 if(cmds->in) {
-					 dupFile(cmds->in, O_RDONLY | O_CREAT, 0666, STDIN_FILENO);
-				 }
-
-				 if(cmds->out) {
-					 dupFile(cmds->out, O_WRONLY | O_CREAT, 0666, STDOUT_FILENO);
-				 }
-				
-
-				 execFils(cmds->seq[i][0], cmds->seq[i]);
-				 break;
-			default: // père
-				 // fermeture des pipe
-				 if(i==0 && cmds->seq[1]) {
-				 		 if(close(pipe_fd[1]) == -1) showErrno("close");
-				 }
-				 if (i > 0) {
-				 	 if (cmds->seq[i+1]) {
-					 	 for(int j = 1; j <= 2; j++) {
-						 	 if(close(pipe_fd[j]) == -1) showErrno("close");
-					 	 }
-				 	 } else {
-						 if(close(pipe_fd[2]) == -1) showErrno("close");
+					 if(cmds->seq[i+1]) { // There is a next command
+						 // close pipe output
+						 if(close(pipe_fd[0]) == -1) showErrno("close");
+						 // our standard output go in the pipe
+						 if(dup2(pipe_fd[1], STDOUT_FILENO) == -1) showErrno("dup2");
 					 }
-				 }
 
-				 pipe_fd[2] = pipe_fd[0];
+					 if(i > 0) { // There was a previous command
+						 // close pipe input
+						 //if(close(pipe_fd[1]) == -1) showErrno("close");
+						 // our input comes from the pipe
+						 if(dup2(pipe_fd[2], STDIN_FILENO) == -1) showErrno("dup2");
+						 //if(close(pipe_fd[2]) == -1) showErrno("close");
+
+					 }
+
+					 if(cmds->in) {
+						 dupFile(cmds->in, O_RDONLY | O_CREAT, 0666, STDIN_FILENO);
+					 }
+
+					 if(cmds->out) {
+						 dupFile(cmds->out, O_WRONLY | O_CREAT, 0666, STDOUT_FILENO);
+					 }
+
+
+					 execFils(cmds->seq[i][0], cmds->seq[i]);
+					 break;
+			default: // père
+					 // fermeture des pipe
+					 if(i==0 && cmds->seq[1]) {
+						 if(close(pipe_fd[1]) == -1) showErrno("close");
+					 }
+					 if (i > 0) {
+						 if (cmds->seq[i+1]) {
+							 for(int j = 1; j <= 2; j++) {
+								 if(close(pipe_fd[j]) == -1) showErrno("close");
+							 }
+						 } else {
+							 if(close(pipe_fd[2]) == -1) showErrno("close");
+						 }
+					 }
+
+					 if(!cmds->seq[i+1]) execPere(pid, cmds->bg, cmds->seq[0][0]);
+
+					 pipe_fd[2] = pipe_fd[0];
 
 		}
 	}
-	execPere(pid, cmds->bg, line);
 }
 
 void execPere(pid_t pid, int bg, char *name) {
