@@ -76,7 +76,7 @@ void execFils(char *prog, char **arg) {
 void executer(char *line) {
 	struct cmdline *cmds = NULL;
 	pid_t pid = 0;
-	int pipe_fd[2];
+	int pipe_fd[3];
 
 	if(!(cmds=parsecmd(&line))) { // = NULL
 		perror("parsecmd"), terminate(0);
@@ -89,23 +89,24 @@ void executer(char *line) {
 
 	for(int i=0; cmds->seq[i] != NULL; ++i) {
 		if(cmds->seq[i+1]) { 
-			if (pipe(pipe_fd) == - 1) showErrno("pipe error");
+				if (pipe(pipe_fd) == - 1) showErrno("pipe error");
 		}
+
 		switch((pid=fork())) {
 			case -1: showErrno("fork");
 			case 0: // fils 
 				 if(cmds->seq[i+1]) { // There is a next command
 					 // close pipe output
-					 if(close(pipe_fd[0]) == -1) showErrno("close");
+					 	 if(close(pipe_fd[0]) == -1) showErrno("close");
 					 // our standard output go in the pipe
-					 if(dup2(pipe_fd[1], STDOUT_FILENO) == -1) showErrno("dup2");
+					 	 if(dup2(pipe_fd[1], STDOUT_FILENO) == -1) showErrno("dup2");
 				 }
 
 				 if(i > 0) { // There was a previous command
 					 // close pipe input
 					 if(close(pipe_fd[1]) == -1) showErrno("close");
 					 // our input comes from the pipe
-					 if(dup2(pipe_fd[0], STDIN_FILENO) == -1) showErrno("dup2");
+					 if(dup2(pipe_fd[3], STDIN_FILENO) == -1) showErrno("dup2");
 				 }
 
 
@@ -117,8 +118,8 @@ void executer(char *line) {
 					 // si on a eu une série de pipe 
 					 if(i > 0) {
 						 // fermeture des pipe
-						 if(close(pipe_fd[0]) == -1) showErrno("close");
 						 if(close(pipe_fd[1]) == -1) showErrno("close");
+						 if(close(pipe_fd[3]) == -1) showErrno("close");
 					 }
 					 execPere(pid, cmds->bg, cmds->seq[i][0]);
 				 }
